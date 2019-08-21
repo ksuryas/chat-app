@@ -7,13 +7,54 @@ const $messageFormButton = $messageForm.querySelector('button');
 const $shareLocation = document.querySelector('#shareLocation');
 
 const $messages = document.querySelector('#messages');
-const messageTemplate = document.querySelector('#message-template');
+const messageTemplate = document.querySelector('#message-template').innerHTML;
+const locationTemplate = document.querySelector('#location-template').innerHTML;
+const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML;
+
+const { username, space } = Qs.parse(location.search, { ignoreQueryPrefix: true });
+
+const autoscroll = () => {
+	const $newMessage = $messages.lastElementChild;
+	const newMessageStyles = getComputedStyle($newMessage);
+	const newMessageMargin = parseInt(newMessageStyles.marginBottom);
+	const newMessageHeight = $newMessage.offsetHeight + newMessageMargin;
+	const visibleHeight = $messages.offsetHeight;
+	const containerHeight = $messages.scrollHeight;
+	const scrollOffset = $messages.scrollTop + visibleHeight;
+	
+	if(containerHeight - newMessageHeight <= scrollOffset) {
+	   $messages.scrollTop = $messages.scrollHeight;
+   }
+};
 
 socket.on('message', (msg) => {
 	log(msg);
-	const html = Mustache.render(messageTemplate);
-	log(typeof(html));
-	$messages.insertAdjacentElement('beforeend', html);
+	const html = Mustache.render(messageTemplate, {
+		username: msg.username,
+		message: msg.text,
+		createdAt: moment(msg.createdAt).format('hh:mm a')
+	});
+	$messages.insertAdjacentHTML('beforeend', html);
+	autoscroll();
+});
+
+socket.on('locationMessage', (message) => {
+	log(message);
+	const html = Mustache.render(locationTemplate, {
+		username: message.username,
+		url: message.url,
+		createdAt: moment(message.createdAt).format('hh:mm a')
+	});
+	$messages.insertAdjacentHTML('beforeend', html);
+    autoscroll();
+});
+
+socket.on('roomData', ({ space, users }) => {
+	const html = Mustache.render(sidebarTemplate, {
+		space,
+		users
+	});
+	document.querySelector('#sidebar').innerHTML = html;
 });
 
 $messageForm.addEventListener('submit', (e) => {
@@ -31,6 +72,7 @@ $messageForm.addEventListener('submit', (e) => {
 		log('Message delivered');
 	});
 });
+
 $shareLocation.addEventListener('click', () => {
 	if(!navigator.geolocation) {
 		return alert('Geolocation not supported for your browser'); 
@@ -47,4 +89,12 @@ $shareLocation.addEventListener('click', () => {
 			$shareLocation.removeAttribute('disabled');
 		});
 	});
+});
+
+socket.emit('join', { username, space }, (error) => {
+	if(error) {
+		alert(error);
+		location.href = '/';
+	}
+	
 });
