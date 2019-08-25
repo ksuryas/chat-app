@@ -53,7 +53,7 @@ socket.on('roomData', ({ space, users }) => {
 	const html = Mustache.render(sidebarTemplate, {
 		space,
 		users
-	});
+	}); 
 	document.querySelector('#sidebar').innerHTML = html;
 });
 

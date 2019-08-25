@@ -181,3 +181,9 @@ button:disabled {
     font-weight: 300;
     padding: 12px 24px 0 24px;
 }
+
+@media only screen and (min-width: 320px) and (max-width: 480px) {
+	#joinForm {
+		font-size: 40px;
+	}
+}

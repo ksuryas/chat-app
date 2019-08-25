@@ -10,7 +10,7 @@ const generateLocationMessage = (username, url) => {
 	return {
 		username,
 		url,	
-	   createdAt: new Date().getTime()
+	    createdAt: new Date().getTime()
 	};
 };
 

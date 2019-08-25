@@ -43,11 +43,12 @@ io.on('connection', (socket) => {
 		if(filter.isProfane(message)) {
 			return cb('You cannot use bad words in your message');
 		}
+		
 		const user = getUser(socket.id);
 		io.to(user.space).emit('message', generateMessage(user.username, message));	
-		
 		cb();
 	});
+	
 	socket.on('sendLocation', (coords, cb) => {
 			const locationURL = `https://www.google.com/maps?q=${coords.lat},${coords.long}`;
 			const user = getUser(socket.id);
